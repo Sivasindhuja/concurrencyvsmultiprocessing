@@ -1,37 +1,34 @@
 import asyncio
 import time
 
+NUM_TASKS = 5
+DELAY_SECONDS = 2.0
+
+
 async def fetchData(id):
     print(f"fetching data...{id}")
-    await asyncio.sleep(2)  # NON-BLOCKING sleep,not time.sleep()
+    # NON-BLOCKING sleep; asyncio.sleep() yields control to the event loop.
+    await asyncio.sleep(DELAY_SECONDS)
     print(f"Completed fetching data of id {id}")
 
+
 async def main():
-    tasks = []
-    for i in range(5):
-        tasks.append(fetchData(i))  # this returns coroutine
+    tasks = [fetchData(i) for i in range(NUM_TASKS)]
     await asyncio.gather(*tasks)
+
+
 def run():
-    start = time.time()
+    start = time.perf_counter()
     asyncio.run(main())
-    end = time.time()
+    end = time.perf_counter()
 
     print("Total Time:", end - start)
+    return end - start
+
 
 if __name__ == "__main__":
     run()
 
-#expected time = 2 seconds
-
-#actual time = 2.018479108810425
-
-
-#its co-operative multitasking
-#unlike multithreding this has only one thread,cpu working
-
-#difference between time.sleep(2) and asyncio.sleep(2) is that time.sleep(2) blocks the CPU
-#whereas asyncio.sleep(2) says that this function is on another operation like i/o or network devies
-#cpu can be used by other processes(cooperative multitasking)
-
-
-# coroutine function-a specialized function that can pause its execution (yielding control) and resume later from where it left off
+# expected time = 2 seconds
+# asyncio uses one thread and cooperative multitasking. Unlike time.sleep(),
+# asyncio.sleep() does not block the thread; the event loop can run other tasks.

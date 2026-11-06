@@ -1,7 +1,12 @@
-import time
-from tabulate import tabulate
+"""Run the local I/O-bound and CPU-bound benchmarks.
 
-# Import your existing files
+Each approach is executed several times and the median wall-clock time is
+reported. The speedup is calculated relative to synchronous execution.
+"""
+
+import statistics
+import time
+
 import inputoutputbound.synchronous as io_sync
 import inputoutputbound.multithreading as io_thread
 import inputoutputbound.asynchronousversion as io_async
@@ -16,33 +21,73 @@ import CPUbound.multiprocessingdemo as cpu_process
 import CPUbound.threadingusingpool as cpu_thread_pool
 import CPUbound.mprocessingusingpool as cpu_process_pool
 
+REPEATS = 3
+
 
 def measure(func):
-    start = time.perf_counter()
-    func()
-    end = time.perf_counter()
-    return round(end - start, 3)
+    """Return the median execution time of ``func`` over REPEATS runs."""
+    times = []
+    for run_number in range(1, REPEATS + 1):
+        start = time.perf_counter()
+        func()
+        elapsed = time.perf_counter() - start
+        times.append(elapsed)
+        print(f"  run {run_number}: {elapsed:.3f}s", flush=True)
+    return statistics.median(times)
+
+
+def benchmark(approaches):
+    """Benchmark (name, callable) pairs and add speedup vs. the first one."""
+    rows = []
+    baseline = None
+
+    for name, func in approaches:
+        print(f"\nBenchmarking {name} ...", flush=True)
+        median = measure(func)
+        if baseline is None:
+            baseline = median
+        speedup = baseline / median if median else float("nan")
+        rows.append((name, median, speedup))
+
+    return rows
+
+
+def print_table(title, rows):
+    print(f"\n{title}")
+    print(f"{'Method':<22}{'Median time (s)':>18}{'Speedup':>12}")
+    print("-" * 52)
+    for name, median, speedup in rows:
+        print(f"{name:<22}{median:>18.3f}{speedup:>11.2f}x")
 
 
 if __name__ == "__main__":
+    print(f"Repeats per approach: {REPEATS} (median reported)", flush=True)
+    print("\nExperiment A: I/O-bound workload", flush=True)
 
-    results = []
+    io_results = benchmark([
+        ("Sync", io_sync.run),
+        ("Threading", io_thread.run),
+        ("Asyncio", io_async.run),
+        ("Multiprocessing", io_process.run),
+        ("ThreadPoolExecutor", io_thread_pool.run),
+        ("ProcessPoolExecutor", io_process_pool.run),
+    ])
 
-    results.append(["I/O Sync", measure(io_sync.run)])
-    results.append(["I/O Thread", measure(io_thread.run)])
-    results.append(["I/O Async", measure(io_async.run)])
-    results.append(["I/O Process", measure(io_process.run)])
-    results.append(["I/O ThreadPool", measure(io_thread_pool.run)])
-    results.append(["I/O ProcessPool", measure(io_process_pool.run)])
+    print("\nExperiment B: CPU-bound workload", flush=True)
+    cpu_results = benchmark([
+        ("Sync", cpu_sync.run),
+        ("Threading", cpu_thread.run),
+        ("Asyncio", cpu_async.run),
+        ("Multiprocessing", cpu_process.run),
+        ("ThreadPoolExecutor", cpu_thread_pool.run),
+        ("ProcessPoolExecutor", cpu_process_pool.run),
+    ])
 
-
-
-    results.append(["CPU Sync", measure(cpu_sync.run)])
-    results.append(["CPU Thread", measure(cpu_thread.run)])
-    results.append(["CPU Async", measure(cpu_async.run)])
-    results.append(["CPU Process", measure(cpu_process.run)])
-    results.append(["CPU ThreadPool", measure(cpu_thread_pool.run)])
-    results.append(["CPU ProcessPool", measure(cpu_process_pool.run)])
-
-    print("\n--- Benchmark Results ---\n")
-    print(tabulate(results, headers=["Method", "Time (seconds)"]))
+    print_table(
+        "Experiment A: I/O-bound (5 tasks, 2 s sleep each)",
+        io_results,
+    )
+    print_table(
+        "Experiment B: CPU-bound (4 x fib(35))",
+        cpu_results,
+    )

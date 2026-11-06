@@ -1,7 +1,8 @@
-# inputoutputbound/threadpool_component.py
-
 import time
 from concurrent.futures import ThreadPoolExecutor
+
+NUM_TASKS = 5
+DELAY_SECONDS = 2.0
 
 
 # ---------------------------
@@ -10,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 def fetchData(id):
     print(f"fetching data...{id}")
-    time.sleep(2)   # Simulating network delay
+    time.sleep(DELAY_SECONDS)   # Simulating network delay
     print(f"Completed fetching data of id {id}")
 
 
@@ -19,15 +20,14 @@ def fetchData(id):
 # ---------------------------
 
 def run():
-    start = time.time()
+    start = time.perf_counter()
 
-    # Create thread pool with 5 workers
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        # Submit 5 tasks
-        list(executor.map(fetchData, range(5)))
+    with ThreadPoolExecutor(max_workers=NUM_TASKS) as executor:
+        list(executor.map(fetchData, range(NUM_TASKS)))
 
-    end = time.time()
+    end = time.perf_counter()
     print("Total Time:", end - start)
+    return end - start
 
 
 # ---------------------------

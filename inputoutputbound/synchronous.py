@@ -1,28 +1,29 @@
-#simulating an API call or a database fetch using time.sleeo()
+# Simulating an API call or a database fetch using time.sleep().
 
 import time
 
+NUM_TASKS = 5
+DELAY_SECONDS = 2.0
+
+
 def fetchData(id):
     print(f"fetching data...{id}")
-    #api call
-    time.sleep(2)
+    # Simulated network/database call
+    time.sleep(DELAY_SECONDS)
     print(f"Completed fetching data of id {id}")
 
 
-
-#start time
 def run():
-    start=time.time()
-    for i in range(5):
+    start = time.perf_counter()
+    for i in range(NUM_TASKS):
         fetchData(i)
+    end = time.perf_counter()
 
-    #end time
+    print("Total time for fetching the data is:", end - start)
+    return end - start
 
-    end=time.time()
 
-    print("Total time for fetching the data is:",end-start)
+if __name__ == "__main__":
+    run()
 
-    if __name__ == "__main__":
-        run()
-#expected time=5*2=10
-#actual time=10.006425380706787
+# expected time = 5 * 2 = 10 seconds

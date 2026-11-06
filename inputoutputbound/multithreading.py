@@ -1,31 +1,35 @@
-import time
 import threading
+import time
+
+NUM_TASKS = 5
+DELAY_SECONDS = 2.0
+
 
 def fetchData(id):
     print(f"fetching data...{id}")
-    #api call
-    time.sleep(2)
+    # Simulated network/database call
+    time.sleep(DELAY_SECONDS)
     print(f"Completed fetching data of id {id}")
 
+
 def run():
-    threads=[]
+    threads = []
+    start = time.perf_counter()
 
-    start=time.time()
-
-    for i in range(5):
-        t=threading.Thread(target=fetchData,args=(i,))
+    for i in range(NUM_TASKS):
+        t = threading.Thread(target=fetchData, args=(i,))
         threads.append(t)
         t.start()
 
     for t in threads:
-        t.join()  #wait until the thread is executed
+        t.join()  # Wait until the thread has finished
 
-
-    end = time.time()
+    end = time.perf_counter()
     print("Total Time:", end - start)
-    if __name__ == "__main__":
-        run()
+    return end - start
 
-#expected time = 2 seconds
-#actual time =  2.003567695617676
 
+if __name__ == "__main__":
+    run()
+
+# expected time = 2 seconds (the five sleeps overlap)

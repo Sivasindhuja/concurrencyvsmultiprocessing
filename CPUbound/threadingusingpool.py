@@ -1,6 +1,9 @@
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+FIB_N = 35
+NUM_TASKS = 4
+
 
 # ---------------------------
 # CPU Task (Recursive Fibonacci)
@@ -12,8 +15,8 @@ def fib(n):
     return fib(n - 1) + fib(n - 2)
 
 
-def cpu_task():
-    return fib(38)
+def cpu_task(_):
+    return fib(FIB_N)
 
 
 # ---------------------------
@@ -21,15 +24,18 @@ def cpu_task():
 # ---------------------------
 
 def run():
-    start = time.time()
+    start = time.perf_counter()
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        results = list(executor.map(lambda _: cpu_task(), range(4)))
+    with ThreadPoolExecutor(max_workers=NUM_TASKS) as executor:
+        results = list(executor.map(cpu_task, range(NUM_TASKS)))
 
-    end = time.time()
+    end = time.perf_counter()
     print("Results:", results[0])
     print("Total Time:", end - start)
+    return end - start
 
 
 if __name__ == "__main__":
     run()
+
+# ThreadPoolExecutor does not bypass the GIL for CPU-bound Python code.

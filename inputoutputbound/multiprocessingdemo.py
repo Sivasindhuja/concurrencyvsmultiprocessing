@@ -1,6 +1,9 @@
 import time
 from multiprocessing import Process
 
+NUM_TASKS = 5
+DELAY_SECONDS = 2.0
+
 
 # ---------------------------
 # I/O Task (Simulated API Call)
@@ -8,7 +11,7 @@ from multiprocessing import Process
 
 def fetchData(id):
     print(f"fetching data...{id}")
-    time.sleep(2)   # Simulating network/API delay
+    time.sleep(DELAY_SECONDS)   # Simulating network/API delay
     print(f"Completed fetching data of id {id}")
 
 
@@ -18,9 +21,9 @@ def fetchData(id):
 
 def run():
     processes = []
-    start = time.time()
+    start = time.perf_counter()
 
-    for i in range(5):
+    for i in range(NUM_TASKS):
         p = Process(target=fetchData, args=(i,))
         processes.append(p)
         p.start()
@@ -28,8 +31,9 @@ def run():
     for p in processes:
         p.join()
 
-    end = time.time()
+    end = time.perf_counter()
     print("Total Time:", end - start)
+    return end - start
 
 
 # ---------------------------

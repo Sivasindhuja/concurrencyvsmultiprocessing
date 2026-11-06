@@ -1,6 +1,9 @@
 import time
 from concurrent.futures import ProcessPoolExecutor
 
+FIB_N = 35
+NUM_TASKS = 4
+
 
 # ---------------------------
 # CPU Task (Recursive Fibonacci)
@@ -13,7 +16,7 @@ def fib(n):
 
 
 def cpu_task(_):
-    return fib(38)
+    return fib(FIB_N)
 
 
 # ---------------------------
@@ -21,15 +24,20 @@ def cpu_task(_):
 # ---------------------------
 
 def run():
-    start = time.time()
+    start = time.perf_counter()
 
-    with ProcessPoolExecutor(max_workers=4) as executor:
-        results = list(executor.map(cpu_task, range(4)))
+    with ProcessPoolExecutor(max_workers=NUM_TASKS) as executor:
+        results = list(executor.map(cpu_task, range(NUM_TASKS)))
 
-    end = time.time()
+    end = time.perf_counter()
     print("Results:", results[0])
     print("Total Time:", end - start)
+    return end - start
 
+
+# ---------------------------
+# Safe Windows Entry Point
+# ---------------------------
 
 if __name__ == "__main__":
     run()

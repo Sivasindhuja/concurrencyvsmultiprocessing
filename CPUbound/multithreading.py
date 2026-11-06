@@ -1,21 +1,25 @@
 import threading
 import time
 
+FIB_N = 35
+NUM_TASKS = 4
+
+
 def fib(n):
-    if(n<=1):
+    if n <= 1:
         return n
-    return fib(n-1) +fib(n-2)
+    return fib(n - 1) + fib(n - 2)
+
 
 def task():
-    fib(38)
+    fib(FIB_N)
 
 
 def run():
-
     threads = []
-    start = time.time()
+    start = time.perf_counter()
 
-    for i in range(4):
+    for _ in range(NUM_TASKS):
         t = threading.Thread(target=task)
         threads.append(t)
         t.start()
@@ -23,10 +27,12 @@ def run():
     for t in threads:
         t.join()
 
-    end = time.time()
+    end = time.perf_counter()
     print("Total Time:", end - start)
+    return end - start
 
-if __name__ =="__main__":
+
+if __name__ == "__main__":
     run()
-#expected = 4 * 1 = 4 seconds
-#actual =  4.401406764984131
+
+# Threads cannot speed up CPU-bound Python code because of the GIL.
